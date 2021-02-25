@@ -3,9 +3,40 @@ import pytmx
 
 
 class Player(pygame.sprite.Sprite):
-    def __init__(self):
+    def __init__(self, x, y):
         pygame.sprite.Sprite.__init__(self)
-        self.image = None
+        self.idle_right = []
+        self.idle_left = []
+        self.run_right = []
+        self.run_left = []
+        # load idle images
+        for i in range(4):
+            img = pygame.image.load(f'assets/player/idle{i}.png')
+            img_left = pygame.transform.flip(img, True, False)
+            self.idle_right.append(img)
+            self.idle_left.append(img_left)
+        # load run images
+        for i in range(6):
+            img = pygame.image.load(f'assets/player/run{i}.png')
+            img_left = pygame.transform.flip(img, True, False)
+            self.run_right.append(img)
+            self.run_left.append(img_left)
+        self.action_index = 0
+        self.image = self.idle_right[self.action_index]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.update_time = pygame.time.get_ticks()
+
+    def update(self):
+        # Handle sprite animation
+        animation_cooldown = 100
+        self.image = self.idle_right[self.action_index]
+        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+            self.update_time = pygame.time.get_ticks()
+            self.action_index += 1
+        if self.action_index >= len(self.idle_right):
+            self.action_index = 0
 
 
 class Map:

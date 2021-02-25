@@ -1,6 +1,6 @@
 import pygame
 
-from classes import Map
+from classes import Map, Player
 
 
 pygame.init()
@@ -15,6 +15,11 @@ game_surface = pygame.Surface((480, 272))
 # Set FPS
 clock = pygame.time.Clock()
 fps = 60
+
+# Create Player group
+player = Player(20, 192)
+player_group = pygame.sprite.GroupSingle()
+player_group.add(player)
 
 run = True
 while run:
@@ -31,6 +36,13 @@ while run:
     # Draw map
     map = Map()
     map.draw(game_surface)
+    
+    # Draw player
+    player_group.draw(game_surface)
+
+    # Update player
+    player_group.update()
+
     screen.blit(pygame.transform.scale(game_surface, (width, height)), (0, 0))
 
     pygame.display.update()
