@@ -36,14 +36,19 @@ while run:
     # Draw map
     map = Map()
     map.draw(game_surface)
-    
+    map.tile_group.draw(game_surface)
+    map.tile_group.update(game_surface)
+
     # Draw player
     player_group.draw(game_surface)
 
     # Update player
-    player_group.update()
+    player_group.update(map)
+
+    pygame.draw.rect(game_surface, (255, 0, 0), player.rect, 1)
 
     screen.blit(pygame.transform.scale(game_surface, (width, height)), (0, 0))
+    # screen.blit(game_surface, (0, 0))
 
     pygame.display.update()
 
