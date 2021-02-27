@@ -1,6 +1,7 @@
 import pygame
 
 from classes import Map, Player
+from functions import draw_text
 
 
 pygame.init()
@@ -14,7 +15,13 @@ game_surface = pygame.Surface((480, 272))
 
 # Set FPS
 clock = pygame.time.Clock()
-fps = 60
+fps = 120
+
+# Define colours
+colour_yellow = (255, 255, 54)
+
+# Define fonts
+font = pygame.font.SysFont('ubuntu', 15)
 
 # Create Player group
 player = Player(20, 192)
@@ -46,6 +53,8 @@ while run:
     player_group.update(map)
 
     pygame.draw.rect(game_surface, (255, 0, 0), player.rect, 1)
+
+    draw_text(game_surface, str(int(clock.get_fps())), font, colour_yellow, 10, 10)
 
     screen.blit(pygame.transform.scale(game_surface, (width, height)), (0, 0))
     # screen.blit(game_surface, (0, 0))

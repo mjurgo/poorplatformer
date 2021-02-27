@@ -130,5 +130,5 @@ class Tile(pygame.sprite.Sprite):
         self.rect.y = y
         self.solid = solid
 
-    def update(self, surface):
-        pygame.draw.rect(surface, (255, 0, 0), self.rect, 1)
+    # def update(self, surface):
+    #     pygame.draw.rect(surface, (255, 0, 0), self.rect, 1)
