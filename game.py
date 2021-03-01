@@ -15,7 +15,7 @@ game_surface = pygame.Surface((480, 272))
 
 # Set FPS
 clock = pygame.time.Clock()
-fps = 120
+fps = 60
 
 # Define colours
 colour_yellow = (255, 255, 54)
@@ -27,6 +27,9 @@ font = pygame.font.SysFont('ubuntu', 15)
 player = Player(20, 192)
 player_group = pygame.sprite.GroupSingle()
 player_group.add(player)
+
+# Create current map
+map = Map()
 
 run = True
 while run:
@@ -41,7 +44,6 @@ while run:
                 run = False
 
     # Draw map
-    map = Map()
     map.draw(game_surface)
     map.tile_group.draw(game_surface)
     map.tile_group.update(game_surface)

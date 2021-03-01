@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<tileset version="1.2" tiledversion="1.3.4" name="misc" tilewidth="2016" tileheight="64" tilecount="62" columns="0">
+<tileset version="1.4" tiledversion="1.4.3" name="misc" tilewidth="2016" tileheight="64" tilecount="62" columns="0">
  <grid orientation="orthogonal" width="1" height="1"/>
  <tile id="0">
   <image width="8" height="10" source="../../../assets/platform_metroidvania asset pack v1.01/miscellaneous sprites/antidote_potion.png"/>
@@ -74,6 +74,9 @@
   <image width="16" height="16" source="../../../assets/platform_metroidvania asset pack v1.01/miscellaneous sprites/lever_turned_right.png"/>
  </tile>
  <tile id="24">
+  <properties>
+   <property name="solid" type="int" value="1"/>
+  </properties>
   <image width="16" height="8" source="../../../assets/platform_metroidvania asset pack v1.01/miscellaneous sprites/loot_box_anim.gif"/>
  </tile>
  <tile id="25">
