@@ -38,8 +38,9 @@ class Player(pygame.sprite.Sprite):
         self.vel_y = 0
         self.jumping = False
         self.in_air = True
+        self.alive = True
 
-    def update(self, map):
+    def update(self, surface, map):
         self.move(map)
         
         # Handle sprite animation
@@ -50,6 +51,11 @@ class Player(pygame.sprite.Sprite):
             self.action_index += 1
         if self.action_index >= len(self.sprites[self.action]):
             self.action_index = 0
+
+        # Draw player to the surface
+        surface.blit(self.image, (self.rect.x, self.rect.y))
+
+        return self.alive
 
     def move(self, map):
         # Handle player movement
@@ -106,6 +112,11 @@ class Player(pygame.sprite.Sprite):
                         dy = tile.rect.top - self.rect.bottom
                         self.vel_y = 0
                         self.in_air = False
+        
+        # Check for collisions with enemies
+            for enemy in map.enemy_group:
+                    if self.hitbox.colliderect(enemy.hitbox) and enemy.alive:
+                        self.alive = False
 
         self.rect.x += dx
         self.rect.y += dy
@@ -145,8 +156,8 @@ class Goblin(pygame.sprite.Sprite):
         self.rect.y = y
         self.action_index = 0
         self.update_time = pygame.time.get_ticks()
-        self.hitbox = pygame.Rect(self.rect.x + 10, self.rect.y + 4, self.rect.width-25,
-                            self.rect.height - 4)
+        self.hitbox = pygame.Rect(self.rect.x, self.rect.y + 2,
+                                self.rect.width - 3, self.rect.height - 2)
 
     def update(self, player, map, surface):
         # Handle sprite animation
@@ -174,7 +185,9 @@ class Goblin(pygame.sprite.Sprite):
             if self.action_index >= len(self.sprites[self.action]):
                 self.action_index = 0
 
-        # pygame.draw.rect(surface, (255, 0, 0), self.rect, 1)
+        self.hitbox.x = self.rect.x
+        self.hitbox.y = self.rect.y + 2
+        pygame.draw.rect(surface, (255, 0, 0), self.hitbox, 1)
 
     def next_step_safe(self, map, dir):
         for tile in map.tile_group:
