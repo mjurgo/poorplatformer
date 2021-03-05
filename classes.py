@@ -155,6 +155,7 @@ class Goblin(pygame.sprite.Sprite):
         self.rect.x = x
         self.rect.y = y
         self.action_index = 0
+        self.last_action_time = pygame.time.get_ticks()
         self.update_time = pygame.time.get_ticks()
         self.hitbox = pygame.Rect(self.rect.x, self.rect.y + 2,
                                 self.rect.width - 3, self.rect.height - 2)
@@ -171,15 +172,23 @@ class Goblin(pygame.sprite.Sprite):
 
         # Detect player
         player_distance = self.rect.x - player.rect.x
-        move_speed = 0
+        action_wait_time = 125
         if (player_distance > 0 and player_distance <= 100 and
                 self.next_step_safe(map, 1)):
-            self.action = 1
-            self.rect.x -= 1
+            if self.action == 1:
+                self.rect.x -= 1
+                self.last_action_time = pygame.time.get_ticks()
+            else:
+                if pygame.time.get_ticks() - self.last_action_time > action_wait_time:
+                    self.action = 1
         elif (player_distance >= -100 and player_distance < 0 and
                 self.next_step_safe(map, 2)):
-            self.action = 2
-            self.rect.x += 1
+            if self.action == 2:
+                self.rect.x += 1
+                self.last_action_time = pygame.time.get_ticks()
+            else:
+                if pygame.time.get_ticks() - self.last_action_time > action_wait_time:
+                    self.action = 2
         else:
             self.action = 0
             if self.action_index >= len(self.sprites[self.action]):
