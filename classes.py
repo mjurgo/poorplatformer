@@ -26,6 +26,8 @@ class Player(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x
         self.rect.y = y
+        self.hitbox = pygame.Rect(self.rect.x + 12, self.rect.y, self.rect.width-25,
+                            self.rect.height)
         self.update_time = pygame.time.get_ticks()
         self.action = 0 # 0: idle, 1: run left, 2: run right
         self.sprites = {
@@ -88,15 +90,15 @@ class Player(pygame.sprite.Sprite):
         for tile in map.tile_group:
             if tile.solid:
                 # Check for collisions in x direction
-                if (tile.rect.colliderect(self.rect.x + dx, self.rect.y,
-                        self.rect.width, self.rect.height) or
-                        tile.rect.colliderect(self.rect.x - scrollx, self.rect.y,
-                            self.rect.width, self.rect.height)):
+                if (tile.rect.colliderect(self.hitbox.x + dx, self.hitbox.y,
+                        self.hitbox.width, self.hitbox.height) or
+                        tile.rect.colliderect(self.hitbox.x - scrollx, self.hitbox.y,
+                            self.hitbox.width, self.hitbox.height)):
                     dx = 0
                     scrollx = 0
                 # Check for collisions in y direction
-                if tile.rect.colliderect(self.rect.x, self.rect.y + dy,
-                        self.rect.width, self.rect.height):
+                if tile.rect.colliderect(self.hitbox.x, self.hitbox.y + dy,
+                        self.hitbox.width, self.hitbox.height):
                     if self.vel_y < 0:
                         dy = tile.rect.bottom - self.rect.top
                         self.vel_y = 0
@@ -107,7 +109,86 @@ class Player(pygame.sprite.Sprite):
 
         self.rect.x += dx
         self.rect.y += dy
+        self.hitbox.x = self.rect.x + 12
+        self.hitbox.y = self.rect.y
+        self.hitbox.width = self.rect.width - 25
+        self.hitbox.height = self.rect.height
         map.scroll(scrollx)
+
+
+class Goblin(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        pygame.sprite.Sprite.__init__(self)
+        self.idle = []
+        self.run_right = []
+        self.run_left = []
+        # Load idle images
+        for i in range(4):
+            img = pygame.image.load(f'assets/goblin/idle{i}.png')
+            self.idle.append(img)
+        # Load run images
+        for i in range(6):
+            img = pygame.image.load(f'assets/goblin/run{i}.png')
+            img_left = pygame.transform.flip(img, True, False)
+            self.run_right.append(img)
+            self.run_left.append(img_left)
+        self.action = 0 # 0: idle, 1: walk left, 2: walk right
+        self.sprites = {
+            0: self.idle,
+            1: self.run_left,
+            2: self.run_right
+        }
+        self.alive = True
+        self.image = self.sprites[0][0]
+        self.rect = self.image.get_rect()
+        self.rect.x = x
+        self.rect.y = y
+        self.action_index = 0
+        self.update_time = pygame.time.get_ticks()
+        self.hitbox = pygame.Rect(self.rect.x + 10, self.rect.y + 4, self.rect.width-25,
+                            self.rect.height - 4)
+
+    def update(self, player, map, surface):
+        # Handle sprite animation
+        animation_cooldown = 100
+        self.image = self.sprites[self.action][self.action_index]
+        if pygame.time.get_ticks() - self.update_time > animation_cooldown:
+            self.update_time = pygame.time.get_ticks()
+            self.action_index += 1
+        if self.action_index >= len(self.sprites[self.action]):
+            self.action_index = 0
+
+        # Detect player
+        player_distance = self.rect.x - player.rect.x
+        move_speed = 0
+        if (player_distance > 0 and player_distance <= 100 and
+                self.next_step_safe(map, 1)):
+            self.action = 1
+            self.rect.x -= 1
+        elif (player_distance >= -100 and player_distance < 0 and
+                self.next_step_safe(map, 2)):
+            self.action = 2
+            self.rect.x += 1
+        else:
+            self.action = 0
+            if self.action_index >= len(self.sprites[self.action]):
+                self.action_index = 0
+
+        # pygame.draw.rect(surface, (255, 0, 0), self.rect, 1)
+
+    def next_step_safe(self, map, dir):
+        for tile in map.tile_group:
+            if dir == 1:
+                if pygame.rect.Rect(self.rect.left - self.rect.width,
+                                    self.rect.top, self.rect.width,
+                                    self.rect.height + 1).colliderect(tile.rect):
+                    return True
+            elif dir == 2:
+                if pygame.rect.Rect(self.rect.right,
+                                    self.rect.top, self.rect.width,
+                                    self.rect.height + 1).colliderect(tile.rect):
+                    return True
+        return False
 
 
 class Map:
@@ -116,7 +197,9 @@ class Map:
         self.background = pygame.transform.scale(img, (1280, 720))
         self.tiled_map = pytmx.load_pygame('assets/maps/testmap2.tmx')
         self.tile_group = pygame.sprite.Group()
+        self.enemy_group = pygame.sprite.Group()
 
+        # Load ground tiles
         for x, y, gid in self.tiled_map.get_layer_by_name('Ground'):
             tile_img = self.tiled_map.get_tile_image_by_gid(gid)
             if tile_img:
@@ -127,12 +210,21 @@ class Map:
                     solid=solid)
                 self.tile_group.add(tile)
 
+        # Load enemies
+        for enemy in self.tiled_map.get_layer_by_name('Enemies'):
+            if enemy.properties.get('goblin'):
+                goblin = Goblin(enemy.x, enemy.y)
+                self.enemy_group.add(goblin)
+
     def draw(self, surface):
         surface.blit(self.background, (0, 0))
 
     def scroll(self, scrollx):
         for tile in self.tile_group:
-                tile.rect.x += scrollx
+            tile.rect.x += scrollx
+        for enemy in self.enemy_group:
+            enemy.rect.x += scrollx
+
 
 class Tile(pygame.sprite.Sprite):
     def __init__(self, img, x, y, solid=False):

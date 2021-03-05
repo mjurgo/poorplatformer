@@ -48,13 +48,17 @@ while run:
     map.tile_group.draw(game_surface)
     map.tile_group.update(game_surface)
 
+    # Draw enemies
+    map.enemy_group.draw(game_surface)
+    map.enemy_group.update(player, map, game_surface)
+
     # Draw player
     player_group.draw(game_surface)
 
     # Update player
     player_group.update(map)
 
-    pygame.draw.rect(game_surface, (255, 0, 0), player.rect, 1)
+    pygame.draw.rect(game_surface, (255, 0, 0), player.hitbox, 1)
 
     draw_text(game_surface, str(int(clock.get_fps())), font, colour_yellow, 10, 10)
 
